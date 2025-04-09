@@ -39,6 +39,11 @@ cd 3D-Diffusion-Policy
 
 export HYDRA_FULL_ERROR=1 
 export CUDA_VISIBLE_DEVICES=${gpu_id}
+echo "Config name: ${config_name}"
+echo "Task name: ${task_name}"
+echo "Run dir: ${run_dir}"
+ls
+
 python train.py --config-name=${config_name}.yaml \
                             task=${task_name} \
                             hydra.run.dir=${run_dir} \

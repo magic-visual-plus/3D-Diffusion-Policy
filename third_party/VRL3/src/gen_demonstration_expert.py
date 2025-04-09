@@ -68,7 +68,7 @@ def main():
     os.makedirs(save_dir, exist_ok=True)
     
     # load expert ckpt
-    loaded_dict = torch.load(args.expert_ckpt_path, map_location='cpu')
+    loaded_dict = torch.load(args.expert_ckpt_path, map_location='cpu', weights_only=False)
     expert_agent = loaded_dict['agent']
     expert_agent.to('cuda')
     

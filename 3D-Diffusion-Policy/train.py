@@ -70,7 +70,7 @@ class TrainDP3Workspace:
 
     def run(self):
         cfg = copy.deepcopy(self.cfg)
-        
+        print(f'self outputdir: {self.output_dir}')
         if cfg.training.debug:
             cfg.training.num_epochs = 100
             cfg.training.max_train_steps = 10
@@ -97,12 +97,24 @@ class TrainDP3Workspace:
                 self.load_checkpoint(path=lastest_ckpt_path)
 
         # configure dataset
+        print("==== Debugging Paths ====")
+        correct_working_dir = "/opt/projects/3D-Diffusion-Policy"
+        print(f"Changing working directory to: {correct_working_dir}")
+        os.chdir(correct_working_dir)
+        print("Updated working directory:", os.getcwd())
+        print("Current working directory:", os.getcwd())  # 检查 cwd
+        print("Absolute script path:", os.path.abspath(__file__))  # train.py 真实路径
+        print("Dataset path from config:", cfg.task.dataset.zarr_path)  # Hydra 解析的路径
+        print("Dataset absolute path:", os.path.abspath(cfg.task.dataset.zarr_path))  # 解析成绝对路径
+        print("Dataset exists?", os.path.exists(os.path.abspath(cfg.task.dataset.zarr_path)))  # 检查文件是否存在
+        print("=========================")
         dataset: BaseDataset
         dataset = hydra.utils.instantiate(cfg.task.dataset)
-
+        print('dataset inited')
         assert isinstance(dataset, BaseDataset), print(f"dataset must be BaseDataset, got {type(dataset)}")
         train_dataloader = DataLoader(dataset, **cfg.dataloader)
         normalizer = dataset.get_normalizer()
+        # print(normalizer)
 
         # configure validation dataset
         val_dataset = dataset.get_validation_dataset()
@@ -333,9 +345,24 @@ class TrainDP3Workspace:
             self.epoch += 1
             del step_log
 
+    def load_model(self):
+        # load the latest checkpoint
+        cfg = copy.deepcopy(self.cfg)
+        
+        lastest_ckpt_path = self.get_checkpoint_path(tag="latest")
+        if lastest_ckpt_path.is_file():
+            cprint(f"Resuming from checkpoint {lastest_ckpt_path}", 'magenta')
+            self.load_checkpoint(path=lastest_ckpt_path)
+
+        policy = self.model
+        if cfg.training.use_ema:
+            policy = self.ema_model
+        policy.eval()
+        policy.cuda()
+        return policy
+    
     def eval(self):
         # load the latest checkpoint
-        
         cfg = copy.deepcopy(self.cfg)
         
         lastest_ckpt_path = self.get_checkpoint_path(tag="latest")

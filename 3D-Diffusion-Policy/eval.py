@@ -24,6 +24,7 @@ OmegaConf.register_new_resolver("eval", eval, replace=True)
         'diffusion_policy_3d', 'config'))
 )
 def main(cfg):
+    print(f'cfg {cfg}, type {type(cfg)}')
     workspace = TrainDP3Workspace(cfg)
     workspace.eval()
 

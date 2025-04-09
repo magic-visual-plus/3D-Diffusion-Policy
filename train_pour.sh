@@ -1,0 +1,1 @@
+bash scripts/train_policy.sh dp3 realdex_pour 0408 0 0

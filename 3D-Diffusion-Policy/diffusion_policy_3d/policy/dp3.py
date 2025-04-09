@@ -179,6 +179,7 @@ class DP3(BasePolicy):
         obs_dict: must include "obs" key
         result: must include "action" key
         """
+        # point_cloud agent_pos keys
         # normalize input
         nobs = self.normalizer.normalize(obs_dict)
         # this_n_point_cloud = nobs['imagin_robot'][..., :3] # only use coordinate
@@ -274,14 +275,16 @@ class DP3(BasePolicy):
         trajectory = nactions
         cond_data = trajectory
         
-       
+        # | o | o |
+        # | a | a | a | a |
+        # we actually use the last 3 actions.
         
         if self.obs_as_global_cond:
             # reshape B, T, ... to B*T
             this_nobs = dict_apply(nobs, 
                 lambda x: x[:,:self.n_obs_steps,...].reshape(-1,*x.shape[2:]))
             nobs_features = self.obs_encoder(this_nobs)
-
+            # current condation_type is film
             if "cross_attention" in self.condition_type:
                 # treat as a sequence
                 global_cond = nobs_features.reshape(batch_size, self.n_obs_steps, -1)
@@ -292,6 +295,7 @@ class DP3(BasePolicy):
             this_n_point_cloud = this_nobs['point_cloud'].reshape(batch_size,-1, *this_nobs['point_cloud'].shape[1:])
             this_n_point_cloud = this_n_point_cloud[..., :3]
         else:
+            # TODO no use for the project, bad code
             # reshape B, T, ... to B*T
             this_nobs = dict_apply(nobs, lambda x: x.reshape(-1, *x.shape[2:]))
             nobs_features = self.obs_encoder(this_nobs)
@@ -360,7 +364,7 @@ class DP3(BasePolicy):
         loss = loss * loss_mask.type(loss.dtype)
         loss = reduce(loss, 'b ... -> b (...)', 'mean')
         loss = loss.mean()
-        
+        print(pred.size())
 
         loss_dict = {
                 'bc_loss': loss.item(),

@@ -1,0 +1,1 @@
+bash scripts/train_policy.sh dp3 adroit_hammer 0408 0 0
