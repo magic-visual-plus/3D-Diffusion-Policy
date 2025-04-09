@@ -44,3 +44,9 @@ personal_TASK.md
 easytrain.sh
 nohup.out
 output/
+third_party/
+data/
+*.jpg
+*.png
+*.mp4
+__MACOSX/
