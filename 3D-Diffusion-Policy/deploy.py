@@ -53,6 +53,9 @@ class AuboSimEnvInferenceClient(BaseInferenceClient):
         
     def init(self):
         dataset_path = '/opt/projects/3D-Diffusion-Policy/data/realdex_pour.zarr'
+        # dataset_path = '/opt/projects/3D-Diffusion-Policy/data/aubo.zarr'
+        # dataset_path = '/opt/projects/3D-Diffusion-Policy/data/aubo_delta.zarr'
+        dataset_path = '/mnt/d/3.0/3D-Diffusion-Policy/data/realdex_pour.zarr'
         if self.sim_mode == 'dataset':
             replay_buffer = ReplayBuffer.copy_from_path(
                     dataset_path, keys=['state', 'action', 'point_cloud', 'img'])
@@ -70,7 +73,7 @@ class AuboSimEnvInferenceClient(BaseInferenceClient):
                 episode_mask=episode_mask)
             # logger.info("sampler len {}", len(sampler))
             self.sampler = sampler
-            self.sample_data_idxs = [i for i in range(0, len(sampler), self.action_horizon//2-1)]
+            self.sample_data_idxs = [i for i in range(0, len(sampler), self.action_horizon-1)]
             self.sample_current_idx = 0
             self.sample_data_len = len(sampler)
             logger.info("sample data idxs {}, current idx {}, sample data len {}", self.sample_data_idxs, self.sample_current_idx, self.sample_data_len)
@@ -82,7 +85,8 @@ class AuboSimEnvInferenceClient(BaseInferenceClient):
         if self.sim_mode == 'dataset':
             self.sample_current_idx += 1
             # just return next obs
-            obs_dict = self.sampler.sample_sequence(self.sample_current_idx)
+            sample_idx = self.sample_data_idxs[self.sample_current_idx]
+            obs_dict = self.sampler.sample_sequence(sample_idx)
             obs_dict['agent_pos'] = obs_dict['state']
             return obs_dict
         else:
@@ -135,7 +139,7 @@ def online_infer(env: BaseInferenceClient, policy: BasePolicy):
     # pour
     roll_out_length_dict = {
         "pour": 300,
-        "grasp": 100,
+        "grasp": 10,
         "wipe": 300,
     }
     # task = "wipe"
