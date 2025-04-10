@@ -24,3 +24,5 @@ kaleido
 plotly
 huggingface_hub==0.22.0
 loguru
+zmq
+blosc
